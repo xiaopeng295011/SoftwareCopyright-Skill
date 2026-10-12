@@ -7,8 +7,8 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from common import COPYRIGHT_CODE_EXTS, FRONTEND_EXTS, ensure_dir, iter_project_files, read_json, rel, write_json
-from extract_code_material import LINES_PER_PAGE, SPLIT_THRESHOLD_PAGES, category_weight, should_skip_file
+from common import CODE_MAX_COLUMNS, FRONTEND_EXTS, ensure_dir, iter_source_files, rel, write_json
+from extract_code_material import LINES_PER_PAGE, SPLIT_THRESHOLD_PAGES, category_weight, material_code_lines
 
 
 DEFAULT_MAX_FILES = 0
@@ -38,22 +38,24 @@ def evidence_for(path: Path, project: Path) -> str:
 
 
 def build_candidates(project: Path) -> list[dict[str, Any]]:
-    files = [p for p in iter_project_files(project, COPYRIGHT_CODE_EXTS) if not should_skip_file(p)]
+    files = list(iter_source_files(project))
     files.sort(key=lambda p: category_weight(p, project))
     candidates: list[dict[str, Any]] = []
     for path in files:
         try:
-            line_count = len(path.read_text(encoding="utf-8", errors="replace").splitlines())
+            text = path.read_text(encoding="utf-8", errors="replace")
+            line_count = len(text.splitlines())
+            material_line_count = len(material_code_lines(text))
         except Exception:
             line_count = 0
+            material_line_count = 0
         priority, _ = category_weight(path, project)
         candidates.append(
             {
                 "path": rel(path, project),
                 "selected": False,
-                "start_line": 1,
-                "end_line": None,
                 "line_count": line_count,
+                "material_line_count": material_line_count,
                 "priority": priority,
                 "selection_tier": "frontend" if path.suffix.lower() in FRONTEND_EXTS else "supplement",
                 "evidence": evidence_for(path, project),
@@ -64,7 +66,8 @@ def build_candidates(project: Path) -> list[dict[str, Any]]:
 
 
 def selected_line_estimate(item: dict[str, Any]) -> int:
-    return int(item.get("line_count") or 0) + 2
+    total = int(item.get("material_line_count") or item.get("line_count") or 0)
+    return total + 1 if total > 0 else 0
 
 
 def selection_stats(candidates: list[dict[str, Any]]) -> dict[str, int]:
@@ -86,7 +89,7 @@ def write_selection_md(path: Path, data: dict[str, Any]) -> None:
         "请先确认要抽取哪些源码文件，再运行代码材料抽取。",
         "",
         "本清单只列出候选源码证据，不默认决定抽取文件。",
-        "模型需要先理解项目业务、页面入口和源码职责，再填写 `selected/start_line/end_line/model_reason`。",
+        "模型需要先理解项目业务、页面入口和源码职责，再填写 `selected/model_reason`。",
         f"当前已选约 {data['estimated_selected_pages']} 页，全部候选源码约 {data['estimated_all_candidate_pages']} 页。",
         "",
         "```text",
@@ -98,18 +101,17 @@ def write_selection_md(path: Path, data: dict[str, Any]) -> None:
         "",
         "1. 模型根据项目业务和代码入口选择最能体现软件功能的文件。",
         "2. 把需要抽取的文件设为 `selected: true`，并填写 `model_reason`。",
-        "3. 如只想抽取某个文件中间部分，可填写 `start_line` 和 `end_line`。",
+        f"3. 代码材料按完整文件抽取并去除纯空行；超过 {CODE_MAX_COLUMNS} 显示列的源码行会确定性折行，不支持只抽取某个文件的中间行段。",
         "4. 用户确认模型选择后，再记录 `code-selection` 门禁。",
         "",
         "## 默认选中文件",
         "",
-        "| 文件 | 行数 | 抽取范围 | 模型选择理由 |",
-        "| --- | ---: | --- | --- |",
+        "| 文件 | 行数 | 模型选择理由 |",
+        "| --- | ---: | --- |",
     ]
     for item in data["files"]:
         if item.get("selected"):
-            end = item.get("end_line") or item.get("line_count")
-            lines.append(f"| `{item['path']}` | {item['line_count']} | {item['start_line']}-{end} | {item.get('model_reason') or '待模型填写'} |")
+            lines.append(f"| `{item['path']}` | {item['line_count']} | {item.get('model_reason') or '待模型填写'} |")
 
     lines.extend(["", "## 未选候选文件", "", "| 文件 | 行数 | 证据类型 |", "| --- | ---: | --- |"])
     for item in data["files"]:
@@ -159,7 +161,7 @@ def main() -> None:
         "supplement_rule": "模型优先选择能体现软件核心功能和真实运行逻辑的源码；不足60页时再从其他相关源码中补充；候选源码仍不足时才生成全部代码材料。",
         "confirmation_stage": "code-selection",
         "next_action": "请由模型填写 草稿/代码文件选择.json 的抽取选择和选择理由，再让用户确认；确认后运行 confirm_stage.py --stage code-selection。",
-        "instructions": "The script only inventories source files. The model must choose selected/start_line/end_line/model_reason before user confirmation.",
+        "instructions": "The script only inventories source files. The model must choose selected/model_reason before user confirmation. Selected files are extracted in full with blank-only lines removed and long lines wrapped to deterministic physical lines.",
         "files": candidates,
     }
     write_json(out_dir / "代码文件选择.json", data)

@@ -1,0 +1,29 @@
+{
+  "output_directory": "当前目录/软件著作权申请资料",
+  "capabilities": {
+    "markdown_drafts": true,
+    "application_txt": true,
+    "officecli": false,
+    "officecli_tested_version": false,
+    "docx_create": false,
+    "docx_openxml_validate": false,
+    "docx_preview": false,
+    "native_word_page_count_possible": false
+  },
+  "versions": {
+    "python": "3.12.14",
+    "officecli": "not found",
+    "officecli_required": "1.0.151"
+  },
+  "paths": {
+    "officecli": ""
+  },
+  "officecli_install_state": "not_installed",
+  "final_docx_mode": "unavailable",
+  "recommendation": "正式 DOCX 统一依赖 OfficeCLI v1.0.151，不再使用 python-docx、Pandoc 或内置 .NET 工具包兜底。",
+  "install_prompt": "是否全局安装 OfficeCLI？命令：`irm https://raw.githubusercontent.com/iOfficeAI/OfficeCLI/main/install.ps1 | iex`；已验证版本发布页：https://github.com/iOfficeAI/OfficeCLI/releases/tag/v1.0.151",
+  "requires_user_input": true,
+  "confirmation_stage": "environment",
+  "next_action": "请在 PowerShell 中执行官方全局安装命令：irm https://raw.githubusercontent.com/iOfficeAI/OfficeCLI/main/install.ps1 | iex。安装完成后重启 Codex，回到此项目再重新运行环境检查。",
+  "officecli_error": ""
+}

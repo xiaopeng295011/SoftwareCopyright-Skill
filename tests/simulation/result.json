@@ -1,0 +1,16 @@
+{
+  "simulation_only": true,
+  "confirmation_note": "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。",
+  "drafts": "PASS",
+  "source_extraction": "PASS: app.py complete file",
+  "application_txt": "PASS",
+  "application_field_consistency": "PASS",
+  "manual_placeholders": "PASS: 4 visible placeholders",
+  "fixture_business_checks": "PASS",
+  "docx": "NOT_EXECUTED: OfficeCLI missing; no installation attempted",
+  "theme_fonts": "NOT_EXECUTED",
+  "word_headers_and_pages": "NOT_EXECUTED",
+  "word_code_pagination": "NOT_EXECUTED",
+  "playwright_screenshots": "NOT_EXECUTED: simulation uses explicit skip",
+  "warnings": []
+}

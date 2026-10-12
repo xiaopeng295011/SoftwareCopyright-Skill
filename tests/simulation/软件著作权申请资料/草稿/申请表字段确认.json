@@ -1,0 +1,7 @@
+{
+  "application_md_sha256": "635b222c328e5d59d8f5d408af34afd180d5f6742f016e0dfbbf86d089fd02c3",
+  "application_fields_confirmed": true,
+  "confirmation_note": "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。",
+  "confirmed_at": "2026-10-12T09:28:28+00:00",
+  "confirmed_content_sha256": "8fe6ea8b068e75006f55f7b8a44142b06d0f11b598c78cdbcfd99fd40f2da357"
+}

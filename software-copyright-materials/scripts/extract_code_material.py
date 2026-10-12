@@ -4,14 +4,30 @@
 from __future__ import annotations
 
 import argparse
+import unicodedata
 from pathlib import Path
 from typing import Any
 
-from common import COPYRIGHT_CODE_EXTS, FRONTEND_EXTS, ensure_dir, iter_project_files, looks_binary, read_json, read_text, rel, safe_filename, write_json
+from common import (
+    CODE_LINES_PER_PAGE,
+    CODE_MAX_COLUMNS,
+    FRONTEND_EXTS,
+    confirmation_is_current,
+    ensure_dir,
+    is_source_candidate,
+    read_json,
+    read_text,
+    rel,
+    safe_filename,
+    write_json,
+)
 
 
-LINES_PER_PAGE = 60
+# Used only to estimate how much source is needed for the first/last 30-page sets.
+# Final DOCX pagination is performed by Word's layout engine without hard page breaks.
+LINES_PER_PAGE = CODE_LINES_PER_PAGE
 SPLIT_THRESHOLD_PAGES = 60
+MAX_CODE_COLUMNS = CODE_MAX_COLUMNS
 
 
 def category_weight(path: Path, project: Path) -> tuple[int, str]:
@@ -50,44 +66,15 @@ def category_weight(path: Path, project: Path) -> tuple[int, str]:
 
 
 def should_skip_file(path: Path) -> bool:
-    if path.suffix.lower() not in COPYRIGHT_CODE_EXTS:
-        return True
-    if looks_binary(path):
-        return True
-    try:
-        size = path.stat().st_size
-    except OSError:
-        return True
-    if size <= 0 or size > 800_000:
-        return True
-    try:
-        sample = read_text(path, limit=20_000)
-    except Exception:
-        return True
-    lines = sample.splitlines()
-    if any(len(line) > 3000 for line in lines[:80]):
-        return True
-    return False
+    return not is_source_candidate(path)
 
 
 def selected_line_estimate(item: dict[str, Any]) -> int:
     try:
-        total = int(item.get("line_count") or 0)
+        total = int(item.get("material_line_count") or item.get("line_count") or 0)
     except (TypeError, ValueError):
         total = 0
-    try:
-        start = int(item.get("start_line") or 1)
-    except (TypeError, ValueError):
-        start = 1
-    try:
-        end = int(item.get("end_line")) if item.get("end_line") not in (None, "", 0) else total
-    except (TypeError, ValueError):
-        end = total
-    if total <= 0:
-        return 0
-    start = max(1, min(start, total))
-    end = max(start, min(end, total))
-    return end - start + 1 + 2
+    return total + 1 if total > 0 else 0
 
 
 def available_pages_from_selection(selection_path: Path | None, lines_per_page: int) -> tuple[int, int, int]:
@@ -107,6 +94,48 @@ def marker_for(path: Path, project: Path) -> str:
     return f"// File: {rel(path, project)}"
 
 
+def display_width(text: str) -> int:
+    """Return deterministic monospace display columns for Latin and CJK text."""
+    width = 0
+    for char in text:
+        width += 2 if unicodedata.east_asian_width(char) in {"W", "F"} else 1
+    return width
+
+
+def wrap_display_line(line: str, max_columns: int = MAX_CODE_COLUMNS) -> list[str]:
+    """Wrap one source line without dropping characters or relying on Word wrapping."""
+    if max_columns < 8:
+        raise ValueError("max_columns must be at least 8")
+    expanded = line.expandtabs(4)
+    if not expanded:
+        return [""]
+    segments: list[str] = []
+    current: list[str] = []
+    current_width = 0
+    for char in expanded:
+        char_width = 2 if unicodedata.east_asian_width(char) in {"W", "F"} else 1
+        if current and current_width + char_width > max_columns:
+            segments.append("".join(current))
+            current = []
+            current_width = 0
+        current.append(char)
+        current_width += char_width
+    if current:
+        segments.append("".join(current))
+    return segments
+
+
+def source_code_lines(text: str) -> list[str]:
+    return [line for line in text.splitlines() if line.strip()]
+
+
+def material_code_lines(text: str, max_columns: int = MAX_CODE_COLUMNS) -> list[str]:
+    lines: list[str] = []
+    for source_line in source_code_lines(text):
+        lines.extend(wrap_display_line(source_line, max_columns))
+    return lines
+
+
 def load_selected_files(project: Path, selection_path: Path | None) -> list[dict[str, Any]]:
     if selection_path is None:
         raise SystemExit(
@@ -119,8 +148,10 @@ def load_selected_files(project: Path, selection_path: Path | None) -> list[dict
         raise SystemExit(
             "STOP_FOR_USER\n"
             "NEXT_ACTION: 代码文件选择尚未确认。请先确认或修改 草稿/代码文件选择.json，"
-            "再运行 `python3 scripts/confirm_stage.py --workdir 软件著作权申请资料 --stage code-selection --note \"<用户确认内容>\"`。"
+            "再运行 `python3 <SKILL_DIR>/scripts/confirm_stage.py --workdir 软件著作权申请资料 --stage code-selection --note \"<用户确认内容>\"`。"
         )
+    if isinstance(data, dict) and data.get("selection_required") and not confirmation_is_current(data):
+        raise SystemExit("STOP_FOR_USER\nNEXT_ACTION: 代码文件选择已修改或缺少内容指纹，请重新确认 code-selection。")
     items = data.get("files") if isinstance(data, dict) else data
     if not isinstance(items, list):
         raise SystemExit(f"Invalid selection file: {selection_path}")
@@ -135,26 +166,12 @@ def load_selected_files(project: Path, selection_path: Path | None) -> list[dict
         selected.append(
             {
                 "path": str(path_value),
-                "start_line": item.get("start_line") or 1,
+                "start_line": item.get("start_line"),
                 "end_line": item.get("end_line"),
                 "selected": True,
             }
         )
     return selected
-
-
-def normalize_line_range(start_line: Any, end_line: Any, total_lines: int) -> tuple[int, int]:
-    try:
-        start = int(start_line or 1)
-    except (TypeError, ValueError):
-        start = 1
-    try:
-        end = int(end_line) if end_line not in (None, "", 0) else total_lines
-    except (TypeError, ValueError):
-        end = total_lines
-    start = max(1, min(start, total_lines or 1))
-    end = max(start, min(end, total_lines))
-    return start, end
 
 
 def collect_code_lines(project: Path, selection_path: Path | None) -> tuple[list[str], list[dict[str, Any]]]:
@@ -172,23 +189,33 @@ def collect_code_lines(project: Path, selection_path: Path | None) -> tuple[list
             continue
         text = read_text(path)
         source_lines = text.splitlines()
-        start_line, end_line = normalize_line_range(item.get("start_line"), item.get("end_line"), len(source_lines))
-        selected_lines = source_lines[start_line - 1 : end_line]
+        try:
+            first = int(item.get("start_line") or 1)
+            last = int(item.get("end_line") or len(source_lines))
+        except (TypeError, ValueError):
+            raise SystemExit(f"Invalid source range: {item['path']}")
+        if not 1 <= first <= last <= len(source_lines):
+            raise SystemExit(f"Invalid source range: {item['path']}: {first}-{last}")
+        selected_text = "\n".join(source_lines[first - 1:last])
+        selected_source_lines = source_code_lines(selected_text)
+        selected_lines = material_code_lines(selected_text)
+        if not selected_source_lines:
+            continue
         start = len(all_lines) + 1
         marker = marker_for(path, project)
-        if start_line != 1 or end_line != len(source_lines):
-            marker = f"{marker} (lines {start_line}-{end_line})"
-        all_lines.append(marker)
+        marker_lines = wrap_display_line(marker)
+        all_lines.extend(marker_lines)
         all_lines.extend(selected_lines)
-        all_lines.append("")
         end = len(all_lines)
         manifest_files.append(
             {
                 "path": rel(path, project),
                 "source_line_count": len(source_lines),
-                "selected_line_start": start_line,
-                "selected_line_end": end_line,
-                "selected_line_count": len(selected_lines),
+                "blank_line_count": last - first + 1 - len(selected_source_lines),
+                "selected_line_start": first,
+                "selected_line_end": last,
+                "selected_line_count": len(selected_source_lines),
+                "material_line_count": len(marker_lines) + len(selected_lines),
                 "material_line_start": start,
                 "material_line_end": end,
             }
@@ -219,7 +246,9 @@ def write_manifest_md(path: Path, manifest: dict[str, Any]) -> None:
         f"- 源码文件数：{manifest['file_count']}",
         f"- 材料代码行数：{manifest['material_line_count']}",
         f"- 每页行数：{manifest['lines_per_page']}",
-        f"- 总页数：{manifest['total_pages']}",
+        f"- 单行最大显示宽度：{manifest['max_code_columns']} 列",
+        f"- 已选源码估算总页数：{manifest['total_pages']}",
+        f"- 实际提交材料页数：{manifest['submitted_page_count']}",
         f"- 目标页数：{manifest['target_pages']}",
         f"- 候选源码可生成页数：{manifest['available_candidate_pages']}",
         f"- 补充状态：{manifest['supplement_status']}",
@@ -227,14 +256,15 @@ def write_manifest_md(path: Path, manifest: dict[str, Any]) -> None:
         "",
         "## 文件来源",
         "",
-        "| 文件 | 源码行数 | 抽取源码范围 | 抽取行数 | 材料行范围 |",
-        "| --- | ---: | --- | ---: | --- |",
+        "| 文件 | 源码行数 | 抽取源码范围 | 抽取源码行数 | 材料物理行数 | 材料行范围 |",
+        "| --- | ---: | --- | ---: | ---: | --- |",
     ]
     for item in manifest["files"]:
         lines.append(
             f"| `{item['path']}` | {item['source_line_count']} | "
             f"{item['selected_line_start']}-{item['selected_line_end']} | "
             f"{item['selected_line_count']} | "
+            f"{item['material_line_count']} | "
             f"{item['material_line_start']}-{item['material_line_end']} |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -255,12 +285,13 @@ def extract(project: Path, out_dir: Path, software_name: str, version: str, line
             f"NEXT_ACTION: 当前已选代码只有 {total_pages} 页，但候选源码足够补齐到 {SPLIT_THRESHOLD_PAGES} 页。"
             "请在 草稿/代码文件选择.json 中继续选择补充文件，重新记录 code-selection 门禁后再抽取。"
         )
+    for stale_name in ("代码-前30页.md", "代码-后30页.md", "代码-全部.md"):
+        (out_dir / stale_name).unlink(missing_ok=True)
     outputs: list[str] = []
 
     if total_pages >= SPLIT_THRESHOLD_PAGES:
         front = list(enumerate(pages[:30], start=1))
-        back_start = total_pages - 29
-        back = [(back_start + i, page) for i, page in enumerate(pages[-30:])]
+        back = [(31 + i, page) for i, page in enumerate(pages[-30:])]
         front_path = out_dir / "代码-前30页.md"
         back_path = out_dir / "代码-后30页.md"
         write_pages_md(front_path, "代码材料（前30页）", software_name, version, front)
@@ -288,7 +319,9 @@ def extract(project: Path, out_dir: Path, software_name: str, version: str, line
         "source_line_count": sum(item["source_line_count"] for item in files),
         "selected_source_line_count": sum(item["selected_line_count"] for item in files),
         "lines_per_page": lines_per_page,
+        "max_code_columns": MAX_CODE_COLUMNS,
         "total_pages": total_pages,
+        "submitted_page_count": 60 if total_pages >= SPLIT_THRESHOLD_PAGES else total_pages,
         "target_pages": SPLIT_THRESHOLD_PAGES,
         "available_candidate_line_count": available_lines,
         "available_candidate_pages": available_pages,

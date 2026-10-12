@@ -1,0 +1,7 @@
+{
+  "screenshot_method": "skip",
+  "screenshot_method_confirmed": true,
+  "confirmation_note": "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。",
+  "confirmed_at": "2026-10-12T09:28:28+00:00",
+  "confirmed_content_sha256": "ed240f7fdc09da889cdbd887dc06f25a783ceb3dc6f370607c276c7707ef2063"
+}
