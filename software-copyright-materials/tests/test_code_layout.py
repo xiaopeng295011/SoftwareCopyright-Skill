@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import tempfile
 import sys
 import unittest
 from pathlib import Path
@@ -8,10 +10,33 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from extract_code_material import MAX_CODE_COLUMNS, display_width, material_code_lines, paginate, wrap_display_line  # noqa: E402
+from common import confirmation_payload_sha256
+from extract_code_material import collect_code_lines, MAX_CODE_COLUMNS, display_width, material_code_lines, paginate, wrap_display_line  # noqa: E402
 
 
 class CodeLayoutTests(unittest.TestCase):
+    def test_legacy_confirmed_range_is_not_expanded(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.js").write_text("before\nselected\n\nafter\n", encoding="utf-8")
+            data = {"selection_required": True, "user_confirmed": True,
+                    "files": [{"path": "app.js", "selected": True, "start_line": 2, "end_line": 3}]}
+            data["confirmed_content_sha256"] = confirmation_payload_sha256(data)
+            selection = root / "selection.json"
+            selection.write_text(json.dumps(data), encoding="utf-8")
+            lines, manifest = collect_code_lines(root, selection)
+            self.assertEqual(lines, ["// File: app.js", "selected"])
+            self.assertEqual((manifest[0]["selected_line_start"], manifest[0]["selected_line_end"]), (2, 3))
+            data["files"][0]["end_line"] = 4
+            selection.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(SystemExit):
+                collect_code_lines(root, selection)
+            data["files"][0]["end_line"] = 99
+            data["confirmed_content_sha256"] = confirmation_payload_sha256(data)
+            selection.write_text(json.dumps(data), encoding="utf-8")
+            with self.assertRaises(SystemExit):
+                collect_code_lines(root, selection)
+
     def test_display_width_counts_cjk_as_two_columns(self) -> None:
         self.assertEqual(display_width("abc中文"), 7)
 

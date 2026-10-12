@@ -1,0 +1,244 @@
+[
+  {
+    "script": "build_docx_from_md.py",
+    "args": [
+      "--workdir",
+      "/tmp/softcopyright-gate-odzzwry0",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--txt-only"
+    ],
+    "exit_code": 2,
+    "stdout": "STOP_FOR_USER\nNEXT_ACTION: 正式 Word/TXT 生成前必须完成以下确认：\n- 业务理解尚未确认：请确认 草稿/业务理解.md 后记录 `business` 门禁\n- 代码文件选择尚未确认：请确认 草稿/代码文件选择.json 后记录 `code-selection` 门禁\n- 截图方式尚未确认：请选择截图方式后记录 `screenshot-method` 门禁\n- 缺少 草稿/申请表信息.md\n- 申请表字段尚未确认：请补全字段后记录 `application-fields` 门禁\n- Markdown 草稿尚未最终确认：请确认全部草稿后记录 `markdown` 门禁\n- 缺少 草稿/业务理解.md\n- 缺少 草稿/业务理解.json\n- 缺少 草稿/代码文件选择.json\n- 缺少 草稿/代码提取清单.md\n- 缺少 草稿/代码提取清单.json\n- 缺少 草稿/申请表信息.md\n- 缺少 草稿/操作手册.md\n- 缺少 草稿/操作手册自检记录.md\n- 缺少 草稿/操作手册自检记录.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "check_environment.py",
+    "args": [
+      "--out-dir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料"
+    ],
+    "exit_code": 0,
+    "stdout": "OK environment check: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料\nFinal DOCX mode: unavailable\n正式 DOCX 统一依赖 OfficeCLI v1.0.151，不再使用 python-docx、Pandoc 或内置 .NET 工具包兜底。\nSTOP_FOR_USER\nNEXT_ACTION: 请在 PowerShell 中执行官方全局安装命令：irm https://raw.githubusercontent.com/iOfficeAI/OfficeCLI/main/install.ps1 | iex。安装完成后重启 Codex，回到此项目再重新运行环境检查。\n",
+    "stderr": ""
+  },
+  {
+    "script": "confirm_stage.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--stage",
+      "environment",
+      "--note",
+      "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。"
+    ],
+    "exit_code": 0,
+    "stdout": "OK confirmation recorded: environment\n/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/环境确认.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "analyze_project.py",
+    "args": [
+      "--project",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/fixtures/fictitious-reagent",
+      "--out",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json"
+    ],
+    "exit_code": 0,
+    "stdout": "OK analysis: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json\nProject: fictitious-reagent\nFrameworks: unknown\nLanguage: Python\nSource files: 1\nSource lines: 83\nTotal source files: 1\nTotal source lines: 83\n",
+    "stderr": ""
+  },
+  {
+    "script": "generate_business_context.py",
+    "args": [
+      "--project",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/fixtures/fictitious-reagent",
+      "--analysis",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--out-dir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿",
+      "--model-context",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/model-context.json"
+    ],
+    "exit_code": 0,
+    "stdout": "OK business context: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/业务理解.md\nFeatures: 4\nSTOP_FOR_USER\nNEXT_ACTION: 请确认 草稿/业务理解.md 中的软件用途、行业、目标用户、核心功能、手册结构和申请口径；确认后运行 confirm_stage.py --stage business。\n",
+    "stderr": ""
+  },
+  {
+    "script": "confirm_stage.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--stage",
+      "business",
+      "--note",
+      "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。"
+    ],
+    "exit_code": 0,
+    "stdout": "OK confirmation recorded: business\n/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/业务理解.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "propose_code_selection.py",
+    "args": [
+      "--project",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/fixtures/fictitious-reagent",
+      "--analysis",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json",
+      "--out-dir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿"
+    ],
+    "exit_code": 0,
+    "stdout": "OK code selection draft: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿\nCandidates: 1\nModel selected: 0\nEstimated selected pages: 0\nEstimated all candidate pages: 2\nSTOP_FOR_USER\nNEXT_ACTION: 请由模型填写 草稿/代码文件选择.json 的抽取选择和选择理由，再让用户确认；确认后运行 confirm_stage.py --stage code-selection。\n",
+    "stderr": ""
+  },
+  {
+    "script": "confirm_stage.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--stage",
+      "code-selection",
+      "--note",
+      "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。"
+    ],
+    "exit_code": 0,
+    "stdout": "OK confirmation recorded: code-selection\n/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/代码文件选择.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "extract_code_material.py",
+    "args": [
+      "--project",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/fixtures/fictitious-reagent",
+      "--analysis",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json",
+      "--selection",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/代码文件选择.json",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--version",
+      "V1.0",
+      "--out-dir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿"
+    ],
+    "exit_code": 0,
+    "stdout": "OK code drafts: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿\nSelected files: 1\nMode: all_under_60_pages\nTotal pages: 2\nOutputs: 代码-全部.md\n",
+    "stderr": ""
+  },
+  {
+    "script": "generate_application_info.py",
+    "args": [
+      "--analysis",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json",
+      "--code-manifest",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/代码提取清单.json",
+      "--business-context",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/业务理解.json",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--version",
+      "V1.0",
+      "--answers",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/answers.json",
+      "--out-dir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿"
+    ],
+    "exit_code": 0,
+    "stdout": "OK application draft: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/申请表信息.md\nSTOP_FOR_USER\nNEXT_ACTION: 请补全并确认申请表字段；确认后运行 confirm_stage.py --stage application-fields。\n",
+    "stderr": ""
+  },
+  {
+    "script": "confirm_stage.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--stage",
+      "application-fields",
+      "--note",
+      "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。"
+    ],
+    "exit_code": 0,
+    "stdout": "OK confirmation recorded: application-fields\n/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/申请表字段确认.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "generate_manual_draft.py",
+    "args": [
+      "--analysis",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/analysis/project.json",
+      "--business-context",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/业务理解.json",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--version",
+      "V1.0",
+      "--out-dir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿"
+    ],
+    "exit_code": 0,
+    "stdout": "OK manual draft: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/操作手册.md\nOK manual self-review: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/操作手册自检记录.md\nReview round 1: 初稿生成 issues=0\nReview round 2: 真实页面字段复核 issues=0\nReview round 3: 制式模板和 AI 味复核 issues=0\nSTOP_FOR_USER\nNEXT_ACTION: 请一次性确认完整操作手册草稿是否符合真实业务；必要时先统一修改段落内容，再运行 confirm_stage.py --stage markdown。\n",
+    "stderr": ""
+  },
+  {
+    "script": "confirm_stage.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--stage",
+      "screenshot-method",
+      "--note",
+      "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。",
+      "--method",
+      "skip"
+    ],
+    "exit_code": 0,
+    "stdout": "OK confirmation recorded: screenshot-method\n/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/截图方式确认.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "confirm_stage.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--stage",
+      "markdown",
+      "--note",
+      "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。"
+    ],
+    "exit_code": 0,
+    "stdout": "OK confirmation recorded: markdown\n/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/最终生成确认.json\n",
+    "stderr": ""
+  },
+  {
+    "script": "build_docx_from_md.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--version",
+      "V1.0",
+      "--txt-only"
+    ],
+    "exit_code": 0,
+    "stdout": "OK application TXT only: /workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/正式资料/申请表信息.txt\nDOCX_NOT_GENERATED: --txt-only；Word生成、主题字体、截图嵌入和实际分页未执行。\n",
+    "stderr": ""
+  },
+  {
+    "script": "build_docx_from_md.py",
+    "args": [
+      "--workdir",
+      "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料",
+      "--software-name",
+      "虚构青岚医院检验试剂管理软件",
+      "--version",
+      "V1.0"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "DOCX_BUILD_FAILED\n当前 Codex 进程无法调用全局 officecli。请按官方方式全局安装 OfficeCLI，然后重启 Codex 再继续：irm https://raw.githubusercontent.com/iOfficeAI/OfficeCLI/main/install.ps1 | iex\n"
+  }
+]

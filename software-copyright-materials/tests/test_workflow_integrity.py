@@ -33,6 +33,17 @@ class WorkflowIntegrityTests(unittest.TestCase):
     def tearDown(self) -> None:
         shutil.rmtree(self.temp_dir)
 
+    def test_first_publication_date_respects_publication_status(self) -> None:
+        path = self.temp_dir / "申请表信息.md"
+        def date_issues(status: str, value: str) -> list[str]:
+            path.write_text(f"➤发表状态：{status}\n➤首次发表日期：{value}\n", encoding="utf-8")
+            return [issue for issue in application_field_issues(path) if "首次发表日期" in issue]
+        self.assertEqual(date_issues("未发表", "不适用（未发表）"), [])
+        self.assertTrue(date_issues("已发表", "不适用（未发表）"))
+        self.assertTrue(date_issues("已发表", ""))
+        self.assertTrue(date_issues("已发表", "2026-02-30"))
+        self.assertEqual(date_issues("已发表", "2026-09-24"), [])
+
     def test_application_uses_whole_project_source_count(self) -> None:
         analysis = {"source": {"line_count": 120, "total_line_count": 980}}
         manifest = {"source_line_count": 400, "selected_source_line_count": 350}
@@ -63,7 +74,8 @@ class WorkflowIntegrityTests(unittest.TestCase):
     def test_playwright_cli_uses_global_prefix_without_restart(self) -> None:
         prefix = self.temp_dir / "global-prefix"
         prefix.mkdir()
-        executable = prefix / "playwright-cli.cmd"
+        executable = playwright_check.npm_global_candidates(prefix)[0]
+        executable.parent.mkdir(parents=True, exist_ok=True)
         executable.write_text("@echo off", encoding="utf-8")
         with (
             patch.object(playwright_check.shutil, "which", return_value=None),

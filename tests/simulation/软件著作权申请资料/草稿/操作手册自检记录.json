@@ -1,0 +1,25 @@
+{
+  "rounds": [
+    {
+      "round": 1,
+      "action": "初稿生成",
+      "issues": []
+    },
+    {
+      "round": 2,
+      "action": "真实页面字段复核",
+      "issues": []
+    },
+    {
+      "round": 3,
+      "action": "制式模板和 AI 味复核",
+      "issues": []
+    },
+    {
+      "round": 4,
+      "action": "模型核对实际源码：断言无账号及资料管理套话，修正重复词，检查四个真实区域",
+      "issues": []
+    }
+  ],
+  "module_count": 4
+}

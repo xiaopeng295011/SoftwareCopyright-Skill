@@ -135,6 +135,10 @@ def application_field_issues(md_path: Path) -> list[str]:
             issues.append(f"➤{field_name}：值“{value}”不在允许范围内（{'/'.join(sorted(allowed))}）。")
     for field_name in ("开发完成日期", "首次发表日期"):
         value = application_field_value(md_path, field_name)
+        if (field_name == "首次发表日期"
+                and application_field_value(md_path, "发表状态") == "未发表"
+                and value in {"", "不适用", "不适用（未发表）"}):
+            continue
         if value and "待用户确认" not in value:
             try:
                 if not DATE_RE.fullmatch(value):

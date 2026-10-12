@@ -654,6 +654,7 @@ def main() -> None:
     parser.add_argument("--version", default="V1.0")
     parser.add_argument("--allow-untested-officecli", action="store_true")
     parser.add_argument("--skip-preview", action="store_true")
+    parser.add_argument("--txt-only", action="store_true", help="仅输出已确认申请表TXT，不调用OfficeCLI或生成DOCX")
     args = parser.parse_args()
     workdir = Path(args.workdir)
     issues = confirmation_issues(workdir)
@@ -663,6 +664,14 @@ def main() -> None:
         for issue in issues:
             print(f"- {issue}")
         raise SystemExit(2)
+    if args.txt_only:
+        final_dir = ensure_dir(workdir / "正式资料")
+        output, warnings = write_application_txt(workdir / "草稿", final_dir)
+        if output is None or warnings:
+            raise SystemExit("TXT_BUILD_FAILED: " + "; ".join(warnings))
+        print(f"OK application TXT only: {output}")
+        print("DOCX_NOT_GENERATED: --txt-only；Word生成、主题字体、截图嵌入和实际分页未执行。")
+        return
     try:
         result = build_all(workdir, args.software_name, args.version, args.skip_preview,
                            args.allow_untested_officecli)

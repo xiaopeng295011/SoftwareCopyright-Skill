@@ -1,0 +1,74 @@
+{
+  "software_name": "虚构青岚医院检验试剂管理软件",
+  "project_root": "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/fixtures/fictitious-reagent",
+  "instruction": "本文件只收集证据，不决定行业、功能或手册结构。请由模型阅读这些证据以及必要的项目源码后，另行编写业务理解模型稿。",
+  "documents": [
+    {
+      "path": "README.md",
+      "size": 1023,
+      "headings": [
+        "虚构青岚医院检验试剂管理软件 V1.0"
+      ],
+      "opening": "虚构青岚医院检验试剂管理软件 V1.0 完全虚构、专供迁移验证的最小软件；不是商业项目，不可申报，不含患者或个人资料。运行 python app.py 后访问 http://127.0.0.1:8765 。 检验科库管员在“入库登记”填14位数字UDI、批号、有效期及正整数数量。同UDI和批号合并数量，同批号有效期不一致拒绝登记。“出库登记”填UDI、批号及数量，库存不足、数量非正或批次过期拒绝出库。成功后库存表和流水同步更新。库存与效期列出UDI、批号、有效期和数量；流水追溯显示本次服务启动后的入出库记录。数据仅保存在内存，服务重启后清空，无账号、无患者信息、无收费及LIS对接。 开发与运行测试设定：Linux、Python 3.10+、支持HTML表单的浏览器；仅监听本机。最低硬件为2核CPU、2GB内存、100MB可用空间，推荐4核CPU、4GB内存。这些是虚构测试字段，不是从用户设备采集的配置。",
+      "format": "md",
+      "text_extracted": true,
+      "extraction_note": "已提取文本"
+    },
+    {
+      "path": "总体设计.md",
+      "size": 254,
+      "headings": [
+        "总体设计（虚构测试）"
+      ],
+      "opening": "总体设计（虚构测试） 单一浏览器页面包含入库登记、出库登记、库存与效期、流水追溯四个区域。内存库存按UDI和批号定位，流水按登记顺序追加。HTTP服务只绑定127.0.0.1；重启清空数据。",
+      "format": "md",
+      "text_extracted": true,
+      "extraction_note": "已提取文本"
+    },
+    {
+      "path": "测试案例.md",
+      "size": 294,
+      "headings": [
+        "测试案例（虚构测试）"
+      ],
+      "opening": "测试案例（虚构测试） 使用UDI 00000000000001、批号SIM-A、有效期2099-12-31，入库10后出库3，库存应为7、流水应为2条。非法UDI、零数量、超库存出库应被拒绝。批号SIM-B有效期2000-01-01应不能出库。数据不得使用真实医院资料。",
+      "format": "md",
+      "text_extracted": true,
+      "extraction_note": "已提取文本"
+    },
+    {
+      "path": "详细设计.md",
+      "size": 332,
+      "headings": [
+        "详细设计（虚构测试）"
+      ],
+      "opening": "详细设计（虚构测试） 入库校验14位数字UDI、ISO日期和正整数数量。同UDI/批号有效期必须一致。出库校验数量、库存和过期日期。库存与流水同步更新。所有页面动态数据进行HTML转义。浏览器必填约束防止漏填字段；服务端错误显示在状态提示区。",
+      "format": "md",
+      "text_extracted": true,
+      "extraction_note": "已提取文本"
+    }
+  ],
+  "code_evidence": {
+    "project_name": "fictitious-reagent",
+    "software_name_candidate": "fictitious reagent",
+    "frameworks": [],
+    "language": "Python",
+    "routes": [
+      "/"
+    ],
+    "feature_name_candidates": [],
+    "entry_files": [],
+    "page_files": [],
+    "component_files": [],
+    "api_files": [],
+    "run_command_candidates": [],
+    "package": {
+      "name": "",
+      "path": "",
+      "version": "V1.0",
+      "scripts": {},
+      "dependency_names": []
+    }
+  },
+  "external_research_notes": ""
+}

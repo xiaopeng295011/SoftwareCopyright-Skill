@@ -639,9 +639,9 @@ def render_manual_canonical(
             "",
             section_heading(2, "说明"),
             "",
-            f"{software_name} {version}适用于{industry_text}场景。用户进入系统后，可以围绕实际工作内容完成账号进入、业务创建、过程查看、结果确认和资料管理等操作。",
+            f"{software_name} {version}适用于{industry_text}场景。主要操作包括{join_items([str(module.get('feature') or '') for module in modules])}。",
             "",
-            f"日常使用时，{user_text}可以按照页面提示从入口进入相应页面，查看当前业务状态，并根据页面中的按钮、输入框、列表或弹窗继续处理。{core_value_text}",
+            f"{user_text}使用本软件处理相关业务。{core_value_text}",
             "",
         ]
     )
@@ -651,8 +651,6 @@ def render_manual_canonical(
         lines.extend([paragraph, ""])
     lines.extend(
         [
-            "本手册用于说明软件的用途、功能特点、运行要求和页面操作流程。各功能章节按用户能够看到的页面、入口、按钮、输入项、提示信息和处理结果进行说明。",
-            "",
             section_heading(3, "功能特点"),
             "",
         ]

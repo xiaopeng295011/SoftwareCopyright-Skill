@@ -1,0 +1,23 @@
+{
+  "draft_file_sha256": {
+    "草稿/业务理解.json": "b9bc3562e09ab3bc8e102fa6f2d7351c0c25c5f7fd525a3f0d9b1d824634fe07",
+    "草稿/业务理解.md": "a6dada19f1919fe73df507e694bae1ee599b39b82239a52e2ff42bab69605657",
+    "草稿/业务理解证据.json": "c3244b1b0ffc3850634cddcafb656303f6d8fa040a2ef45ae553c67758140bf3",
+    "草稿/业务理解证据.md": "d8cc0286bf117bb599e44478997eb96e274f4a1e2e863bf1f4c133b6a6ee3b8f",
+    "草稿/代码-全部.md": "f013514c0ea79279fbd0f45fcc15e54288f266cf2d937b1c57dc532dffdeebbe",
+    "草稿/代码提取清单.json": "cda1680cba59e8eb28612c79abdd7bde2c96ef94deefe74b6cafd57690bad2c3",
+    "草稿/代码提取清单.md": "7e95f3ca93ce134e4a7ee5f3e0ab5ea7ffb2d63cd101124cb5d3487c87d65f18",
+    "草稿/代码文件候选清单.md": "02350aae50fcee82d7b04029b77e512fbf8f372c033564e538a698ba769949cb",
+    "草稿/代码文件选择.json": "c4b81ee72afdf925c6b35dccb115c9d973b9281bdbb5b32b82566ec5ed762511",
+    "草稿/操作手册.md": "c138638ca8bbf8c0d83f10189e63c7d995b8879659d53195d30e3cc3bef3e75f",
+    "草稿/操作手册自检记录.json": "6c1ed7191ec398c16d54dfd24f2c87e3297ebde5569b12c5fb815d0d51f768b0",
+    "草稿/操作手册自检记录.md": "0df8fe3855f421b8550b362ad62dd05ca26c235fe1fa475db3989b2958d8391e",
+    "草稿/申请表信息.md": "635b222c328e5d59d8f5d408af34afd180d5f6742f016e0dfbbf86d089fd02c3",
+    "草稿/申请表字段确认.json": "4ccea1f4dadd451b9799e8dc512dceea0151ab59fb8fa384a101945ee1aae8b1",
+    "截图方式确认.json": "3a25b0e25c8ed95073511c1f1917d0f889f04116b564e2dc15bd970b409d2e9d"
+  },
+  "markdown_confirmed": true,
+  "confirmation_note": "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。",
+  "confirmed_at": "2026-10-12T09:28:28+00:00",
+  "confirmed_content_sha256": "926e14848928e635ef821e865586b8fbb6f8a37a8ce6179d8afe8d9595eeca45"
+}

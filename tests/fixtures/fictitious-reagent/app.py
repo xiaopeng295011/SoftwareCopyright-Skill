@@ -1,0 +1,83 @@
+"""Fictional fixture only: no patients, credentials, or commercial source."""
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs
+from datetime import date
+import html
+import json
+
+stock = []
+ledger = []
+
+def receive(udi, batch, expiry, quantity):
+    if len(udi) != 14 or not udi.isdigit():
+        raise ValueError('UDI必须为14位数字')
+    quantity = int(quantity)
+    if quantity <= 0:
+        raise ValueError('数量必须大于零')
+    date.fromisoformat(expiry)
+    row = next((r for r in stock if r['udi'] == udi and r['batch'] == batch), None)
+    if row is None:
+        row = {'udi': udi, 'batch': batch, 'expiry': expiry, 'quantity': 0}
+        stock.append(row)
+    elif row['expiry'] != expiry:
+        raise ValueError('同一批号的有效期必须一致')
+    row['quantity'] += quantity
+    ledger.append({'action': '入库', 'udi': udi, 'batch': batch, 'quantity': quantity})
+
+def issue(udi, batch, quantity):
+    quantity = int(quantity)
+    row = next((r for r in stock if r['udi'] == udi and r['batch'] == batch), None)
+    if quantity <= 0 or row is None or quantity > row['quantity']:
+        raise ValueError('出库数量必须大于零且不能超过库存')
+    if date.fromisoformat(row['expiry']) < date.today():
+        raise ValueError('过期批次不能出库')
+    row['quantity'] -= quantity
+    ledger.append({'action': '出库', 'udi': udi, 'batch': batch, 'quantity': quantity})
+
+def render(message=''):
+    rows = ''.join('<tr><td>' + '</td><td>'.join(html.escape(str(r[k])) for k in ('udi', 'batch', 'expiry', 'quantity')) + '</td></tr>' for r in stock)
+    movements = html.escape(json.dumps(ledger, ensure_ascii=False, indent=2))
+    return f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8">
+<title>虚构青岚医院检验试剂管理软件 V1.0</title>
+<style>body{{font-family:serif;margin:2em}}td,th{{padding:8px;border:1px solid #ccc}}</style>
+<h1>虚构青岚医院检验试剂管理软件 V1.0</h1>
+<p>仅用于工具迁移测试，全部数据虚构。关闭服务后数据清空。</p>
+<nav><a href="#receive">入库登记</a> | <a href="#issue">出库登记</a> | <a href="#stock">库存与效期</a> | <a href="#ledger">流水追溯</a></nav>
+<p role="status">{html.escape(message)}</p>
+<section id="receive"><h2>入库登记</h2><form method="post" action="/receive">
+<label>UDI <input name="udi" required pattern="[0-9]{{14}}"></label>
+<label>批号 <input name="batch" required></label>
+<label>有效期 <input type="date" name="expiry" required></label>
+<label>数量 <input type="number" name="quantity" min="1" required></label><button>确认入库</button></form></section>
+<section id="issue"><h2>出库登记</h2><form method="post" action="/issue">
+<label>UDI <input name="udi" required pattern="[0-9]{{14}}"></label>
+<label>批号 <input name="batch" required></label>
+<label>数量 <input type="number" name="quantity" min="1" required></label><button>确认出库</button></form></section>
+<section id="stock"><h2>库存与效期</h2><table><tr><th>UDI</th><th>批号</th><th>有效期</th><th>库存数量</th></tr>{rows}</table></section>
+<section id="ledger"><h2>流水追溯</h2><pre>{movements}</pre></section></html>'''
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.respond(render())
+    def do_POST(self):
+        fields = parse_qs(self.rfile.read(int(self.headers['Content-Length'])).decode())
+        try:
+            values = {k: v[0] for k, v in fields.items()}
+            if self.path == '/receive':
+                receive(**values)
+            elif self.path == '/issue':
+                issue(**values)
+            else:
+                raise ValueError('未知操作')
+            message = '登记成功，库存和流水已更新'
+        except (ValueError, TypeError) as exc:
+            message = str(exc)
+        self.respond(render(message))
+    def respond(self, content):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.end_headers()
+        self.wfile.write(content.encode())
+
+if __name__ == '__main__':
+    HTTPServer(('127.0.0.1', 8765), Handler).serve_forever()

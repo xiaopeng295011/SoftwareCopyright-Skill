@@ -1,0 +1,36 @@
+{
+  "software_name": "虚构青岚医院检验试剂管理软件",
+  "version": "V1.0",
+  "project_root": "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/fixtures/fictitious-reagent",
+  "file_count": 1,
+  "material_line_count": 84,
+  "source_line_count": 83,
+  "selected_source_line_count": 77,
+  "lines_per_page": 55,
+  "max_code_columns": 90,
+  "total_pages": 2,
+  "submitted_page_count": 2,
+  "target_pages": 60,
+  "available_candidate_line_count": 84,
+  "available_candidate_pages": 2,
+  "supplement_status": "候选源码不足60页，按全部代码材料生成",
+  "mode": "all_under_60_pages",
+  "selection_file": "/workspace/scratch/679969551ecc/SoftwareCopyright-Skill/tests/simulation/软件著作权申请资料/草稿/代码文件选择.json",
+  "outputs": [
+    "代码-全部.md"
+  ],
+  "files": [
+    {
+      "path": "app.py",
+      "source_line_count": 83,
+      "blank_line_count": 6,
+      "selected_line_start": 1,
+      "selected_line_end": 83,
+      "selected_line_count": 77,
+      "material_line_count": 84,
+      "material_line_start": 1,
+      "material_line_end": 84
+    }
+  ],
+  "safe_software_filename": "虚构青岚医院检验试剂管理软件"
+}

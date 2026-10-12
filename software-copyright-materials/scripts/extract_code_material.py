@@ -12,6 +12,7 @@ from common import (
     CODE_LINES_PER_PAGE,
     CODE_MAX_COLUMNS,
     FRONTEND_EXTS,
+    confirmation_is_current,
     ensure_dir,
     is_source_candidate,
     read_json,
@@ -149,6 +150,8 @@ def load_selected_files(project: Path, selection_path: Path | None) -> list[dict
             "NEXT_ACTION: 代码文件选择尚未确认。请先确认或修改 草稿/代码文件选择.json，"
             "再运行 `python3 <SKILL_DIR>/scripts/confirm_stage.py --workdir 软件著作权申请资料 --stage code-selection --note \"<用户确认内容>\"`。"
         )
+    if isinstance(data, dict) and data.get("selection_required") and not confirmation_is_current(data):
+        raise SystemExit("STOP_FOR_USER\nNEXT_ACTION: 代码文件选择已修改或缺少内容指纹，请重新确认 code-selection。")
     items = data.get("files") if isinstance(data, dict) else data
     if not isinstance(items, list):
         raise SystemExit(f"Invalid selection file: {selection_path}")
@@ -163,6 +166,8 @@ def load_selected_files(project: Path, selection_path: Path | None) -> list[dict
         selected.append(
             {
                 "path": str(path_value),
+                "start_line": item.get("start_line"),
+                "end_line": item.get("end_line"),
                 "selected": True,
             }
         )
@@ -184,8 +189,16 @@ def collect_code_lines(project: Path, selection_path: Path | None) -> tuple[list
             continue
         text = read_text(path)
         source_lines = text.splitlines()
-        selected_source_lines = source_code_lines(text)
-        selected_lines = material_code_lines(text)
+        try:
+            first = int(item.get("start_line") or 1)
+            last = int(item.get("end_line") or len(source_lines))
+        except (TypeError, ValueError):
+            raise SystemExit(f"Invalid source range: {item['path']}")
+        if not 1 <= first <= last <= len(source_lines):
+            raise SystemExit(f"Invalid source range: {item['path']}: {first}-{last}")
+        selected_text = "\n".join(source_lines[first - 1:last])
+        selected_source_lines = source_code_lines(selected_text)
+        selected_lines = material_code_lines(selected_text)
         if not selected_source_lines:
             continue
         start = len(all_lines) + 1
@@ -194,14 +207,13 @@ def collect_code_lines(project: Path, selection_path: Path | None) -> tuple[list
         all_lines.extend(marker_lines)
         all_lines.extend(selected_lines)
         end = len(all_lines)
-        source_end_line = len(source_lines)
         manifest_files.append(
             {
                 "path": rel(path, project),
                 "source_line_count": len(source_lines),
-                "blank_line_count": len(source_lines) - len(selected_source_lines),
-                "selected_line_start": 1,
-                "selected_line_end": source_end_line,
+                "blank_line_count": last - first + 1 - len(selected_source_lines),
+                "selected_line_start": first,
+                "selected_line_end": last,
                 "selected_line_count": len(selected_source_lines),
                 "material_line_count": len(marker_lines) + len(selected_lines),
                 "material_line_start": start,

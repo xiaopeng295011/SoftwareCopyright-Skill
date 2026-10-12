@@ -1,0 +1,6 @@
+{
+  "environment_confirmed": true,
+  "confirmation_note": "TEST_ONLY：用户授权的模拟测试确认；不代表真实用户确认，不得用于实际申请。",
+  "confirmed_at": "2026-10-12T09:28:27+00:00",
+  "confirmed_content_sha256": "46456dae7e9f6e74fa113dff55ed152712b61fe450e53f19ed5b3c7747ed00d9"
+}
